@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const SignUp = () => {
   const [username, setUsername] = useState("");
@@ -7,9 +8,32 @@ const SignUp = () => {
   const [isStudent, setIsStudent] = useState(false);
   const [univId, setUnivId] = useState("");
 
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    /* نداء API التسجيل */
+
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+
+    if (users.some((u) => u.username === username)) {
+      alert("اسم المستخدم مستخدم من قبل، جرّب اسمًا آخر");
+      return;
+    }
+
+    const newUser = {
+      id: Date.now(),
+      username,
+      password,
+      role: isStudent ? "student" : "guest",
+      univId: isStudent ? univId : null,
+    };
+
+    users.push(newUser);
+    localStorage.setItem("users", JSON.stringify(users));
+
+    login(newUser, true);
+    navigate("/home");
   };
 
   return (
@@ -18,7 +42,6 @@ const SignUp = () => {
         <h1 className="mb-8 text-3xl font-bold">Sign Up</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Username */}
           <div>
             <label htmlFor="user" className="mb-1 block font-semibold">
               Username
@@ -29,10 +52,10 @@ const SignUp = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full rounded-md border border-border bg-surface px-3 py-2 focus:border-primary focus:ring-primary"
+              required
             />
           </div>
 
-          {/* Password */}
           <div>
             <label htmlFor="pass" className="mb-1 block font-semibold">
               Password
@@ -43,10 +66,10 @@ const SignUp = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-md border border-border bg-surface px-3 py-2 focus:border-primary focus:ring-primary"
+              required
             />
           </div>
 
-          {/* I am a student */}
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -57,7 +80,6 @@ const SignUp = () => {
             I am a student
           </label>
 
-          {/* University ID – يظهر فقط إذا كان طالباً */}
           {isStudent && (
             <div>
               <label htmlFor="univ" className="mb-1 block font-semibold">
@@ -69,6 +91,7 @@ const SignUp = () => {
                 value={univId}
                 onChange={(e) => setUnivId(e.target.value)}
                 className="w-full rounded-md border border-border bg-surface px-3 py-2 focus:border-primary focus:ring-primary"
+                required
               />
             </div>
           )}
@@ -84,7 +107,7 @@ const SignUp = () => {
         <p className="mt-6 text-center text-sm text-gray-400">
           Already have an account?{" "}
           <Link to="/signin" className="text-primary hover:underline">
-            Sign in
+            Sign In
           </Link>
         </p>
       </div>

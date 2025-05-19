@@ -1,86 +1,68 @@
 import React from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const Layout = ({ adminName }) => {
-  const location = useLocation(); 
+/* تخطيط التطبيق الرئيس */
+const Layout = () => {
+  const { user, logout } = useAuth();       // ⬅️ بيانات ودوال المصادقة
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  /* لمعرفة الرابط النشط وإعطاء لون مختلف */
   const isActive = (path) => location.pathname === path;
 
+  /* تسجيل الخروج وإعادة التوجيه لصفحة تسجيل الدخول */
+  const handleLogout = () => {
+    logout();
+    navigate("/signin");
+  };
+
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-white flex flex-col">
-      {/* Top Nav */}
+    <div className="min-h-screen flex flex-col bg-[#1a1a1a] text-white">
+      {/* الشريط العلوي */}
       <header className="h-[55px] w-full flex justify-end items-center bg-[#1e1e1e] px-6 border-b-2 border-[#414141] shadow-sm z-10">
-        <span className="font-semibold text-white mr-4 text-lg">{adminName}</span>
+        <span className="mr-4 text-lg font-semibold">
+          {user?.username ?? "مستخدم"}
+        </span>
+
         <button
-          onClick={() => alert("Logout")}
-          className="bg-[#f44336] text-white px-4 py-2 rounded text-sm hover:bg-[#ff2020]"
+          onClick={handleLogout}
+          className="rounded bg-[#f44336] px-4 py-2 text-sm text-white transition hover:bg-[#ff2020]"
         >
           Logout
         </button>
       </header>
 
-      {/* Sidebar + Page */}
+      {/* الشريط الجانبي + المحتوى */}
       <div className="flex flex-1">
-        {/* Sidebar */}
-        <aside
-          id="sidebar"
-          className="w-[220px] bg- #2f2f2f border-r border-[#323232] px-2 py-6"
-        >
-          <nav className="menu">
+        {/* الشريط الجانبي */}
+        <aside className="w-[220px] bg-[#2f2f2f] border-r border-[#323232] px-2 py-6">
+          <nav>
             <ul className="list-none p-0">
-              <li className="mb-4">
-                <Link
-                  to="/home"
-                  className={`block px-4 py-3 rounded font-bold ${
-                    isActive("/home")
-                      ? "bg-[#027bff] text-white"
-                      : "bg-[#444444] text-[#ccc] hover:bg-[#2f2f2f] hover:text-white"
-                  }`}
-                >
-                  Home
-                </Link>
-              </li>
-              <li className="mb-4">
-                <Link
-                  to="/projects"
-                  className={`block px-4 py-3 rounded ${
-                    isActive("/projects")
-                      ? "bg-[#027bff] text-white"
-                      : "bg-[#444444] text-[#ccc] hover:bg-[#2f2f2f] hover:text-white"
-                  }`}
-                >
-                  Projects
-                </Link>
-              </li>
-              <li className="mb-4">
-                <Link
-                  to="/tasks"
-                  className={`block px-4 py-3 rounded ${
-                    isActive("/tasks")
-                      ? "bg-[#027bff] text-white"
-                      : "bg-[#444444] text-[#ccc] hover:bg-[#2f2f2f] hover:text-white"
-                  }`}
-                >
-                  Tasks
-                </Link>
-              </li>
-              <li className="mb-4">
-                <Link
-                  to="/chat"
-                  className={`block px-4 py-3 rounded ${
-                    isActive("/chat")
-                      ? "bg-[#027bff] text-white"
-                      : "bg-[#444444] text-[#ccc] hover:bg-[#2f2f2f] hover:text-white"
-                  }`}
-                >
-                  Chat
-                </Link>
-              </li>
+              {[
+                { path: "/home", label: "Home" },
+                { path: "/projects", label: "Projects" },
+                { path: "/tasks", label: "Tasks" },
+                { path: "/chat", label: "Chat" },
+              ].map(({ path, label }) => (
+                <li key={path} className="mb-4">
+                  <Link
+                    to={path}
+                    className={`block rounded px-4 py-3 font-bold ${
+                      isActive(path)
+                        ? "bg-[#027bff] text-white"
+                        : "bg-[#444444] text-[#ccc] hover:bg-[#2f2f2f] hover:text-white"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
         </aside>
 
-        {/* Main Content */}
+        {/* منطقة المحتوى الرئيس */}
         <main className="flex-1 p-6">
           <Outlet />
         </main>

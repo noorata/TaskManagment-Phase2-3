@@ -1,9 +1,17 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 const defaultStudents = [
-  "Ali Yaseen", "Braa Aeesh", "Ibn Al-Jawzee", "Ibn Malik",
-  "Ayman Outom", "Salah Salah", "Yahya Leader", "Salam Kareem",
-  "Isaac Nasir", "Saeed Salam"
+  "Ali Yaseen",
+  "Braa Aeesh",
+  "Ibn Al-Jawzee",
+  "Ibn Malik",
+  "Ayman Outom",
+  "Salah Salah",
+  "Yahya Leader",
+  "Salam Kareem",
+  "Isaac Nasir",
+  "Saeed Salam",
 ];
 
 const getStatusColor = (status) => {
@@ -24,32 +32,37 @@ const getStatusColor = (status) => {
 };
 
 export default function TasksPage() {
+  const { user: currentUser } = useAuth();
+  const isStudent =
+    (currentUser?.role || "").toString().toLowerCase() === "student";
+
   const [tasks, setTasks] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editIdx, setEditIdx] = useState(null);
-  const selectRef = useRef(null);
   const [sortBy, setSortBy] = useState("status");
+  const selectRef = useRef(null);
   const [form, setForm] = useState({
     project: "",
     name: "",
     description: "",
     student: "",
     status: "",
-    dueDate: ""
+    dueDate: "",
   });
-
-  const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
-  const isStudent = currentUser.role === "Student";
 
   const storedStudents = (
     JSON.parse(localStorage.getItem("students")) || []
   ).map((s) => (typeof s === "object" ? s.username : s));
 
-  const studentsList = Array.from(new Set([...storedStudents, ...defaultStudents]));
+  const studentsList = Array.from(
+    new Set([...storedStudents, ...defaultStudents])
+  );
 
   const studentProjects = isStudent
     ? (window.fakeProjectsData || [])
-        .filter((p) => p.students.split(", ").includes(currentUser.username))
+        .filter((p) =>
+          p.students.split(", ").includes(currentUser.username)
+        )
         .map((p) => p.title)
     : [];
 
@@ -61,7 +74,7 @@ export default function TasksPage() {
   const filterAndSet = (all) => {
     const filtered = isStudent
       ? all.filter((t) => t.student === currentUser.username)
-      : currentUser.role === "Teacher"
+      : (currentUser.role || "") === "Teacher"
       ? all.filter((t) => t.createdBy === currentUser.username)
       : all;
     setTasks(filtered);
@@ -71,7 +84,8 @@ export default function TasksPage() {
     const val = e.target.value;
     setSortBy(val);
     const sorted = [...tasks].sort((a, b) => {
-      if (val === "dueDate") return new Date(a.dueDate) - new Date(b.dueDate);
+      if (val === "dueDate")
+        return new Date(a.dueDate) - new Date(b.dueDate);
       return a[val].localeCompare(b[val]);
     });
     setTasks(sorted);
@@ -82,14 +96,21 @@ export default function TasksPage() {
     if (idx !== null) setForm({ ...tasks[idx] });
     setShowModal(true);
   };
-
   const closeModal = () => {
     setShowModal(false);
-    setForm({ project: "", name: "", description: "", student: "", status: "", dueDate: "" });
+    setForm({
+      project: "",
+      name: "",
+      description: "",
+      student: "",
+      status: "",
+      dueDate: "",
+    });
     setEditIdx(null);
   };
 
-  const handleChange = (e) => setForm({ ...form, [e.target.id]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.id]: e.target.value });
 
   const saveTasks = (arr) => {
     localStorage.setItem("tasks", JSON.stringify(arr));
@@ -98,11 +119,15 @@ export default function TasksPage() {
 
   const handleSubmit = () => {
     const { project, name, description, student, status, dueDate } = form;
-    if (!project || !name || !description || !status || !dueDate) return alert("Please fill all fields");
+    if (!project || !name || !description || !status || !dueDate)
+      return alert("Please fill all fields");
 
     const allTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
     if (editIdx !== null) {
-      const originalIdx = allTasks.findIndex((t) => t.id === tasks[editIdx].id);
+      const originalIdx = allTasks.findIndex(
+        (t) => t.id === tasks[editIdx].id
+      );
       allTasks[originalIdx] = { ...allTasks[originalIdx], ...form };
       saveTasks(allTasks);
     } else {
@@ -113,10 +138,12 @@ export default function TasksPage() {
         description,
         student: isStudent ? currentUser.username : student,
         studentNumber:
-          (JSON.parse(localStorage.getItem("students")) || []).find((s) => s.username === student)?.universityID || "N/A",
+          (JSON.parse(localStorage.getItem("students")) || []).find(
+            (s) => s.username === student
+          )?.universityID || "N/A",
         status,
         dueDate,
-        createdBy: !isStudent ? currentUser.username : "tasbeeh"
+        createdBy: isStudent ? currentUser.username : currentUser.username,
       };
       allTasks.push(newTask);
       saveTasks(allTasks);
@@ -132,112 +159,161 @@ export default function TasksPage() {
 
   return (
     <section className="tasks-page p-5 text-[#ccc]">
-      <div className="task-controls flex items-center mb-5 gap-3">
+      <div className="task-controls mb-5 flex items-center gap-3">
         <label htmlFor="sortTasks">Sort By:</label>
         <select
           id="sortTasks"
           value={sortBy}
           onChange={handleSort}
           ref={selectRef}
-          className="bg-[#2b2b2b] text-[#d8d5d5] px-3 py-2 rounded"
+          className="rounded bg-[#2b2b2b] px-3 py-2 text-[#d8d5d5]"
         >
           <option value="status">Task Status</option>
           <option value="project">Project</option>
           <option value="dueDate">Due Date</option>
           <option value="student">Assigned Student</option>
         </select>
+
         <button
           onClick={() => openModal()}
-          className="ml-auto bg-[#0066ff] text-[#ebe6e6] px-4 py-2 rounded hover:bg-[#1a5ed1]"
+          className="ml-auto rounded bg-[#0066ff] px-4 py-2 text-[#ebe6e6] hover:bg-[#1a5ed1]"
         >
           Create a New Task
         </button>
       </div>
 
-      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[#1e1e1e] border border-[#444] text-white p-5 rounded w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
-            <button className="absolute top-2 right-3 text-xl" onClick={closeModal}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded border border-[#444] bg-[#1e1e1e] p-5 text-white">
+            <button
+              className="absolute right-3 top-2 text-xl"
+              onClick={closeModal}
+            >
               &times;
             </button>
-            <h2 className="text-[#027bff] text-2xl mb-5">
+            <h2 className="mb-5 text-2xl text-[#027bff]">
               {editIdx !== null ? "Edit Task" : "Create New Task"}
             </h2>
 
-            {/* Form */}
-            <label htmlFor="projectTitle" className="font-bold">Project Title:</label>
+            <label className="font-bold" htmlFor="project">
+              Project Title:
+            </label>
             <select
               id="project"
               value={form.project}
               onChange={handleChange}
-              className="w-full bg-[#333333] p-2 mb-3 rounded"
+              className="mb-3 w-full rounded bg-[#333333] p-2"
             >
               <option value="">Select a project</option>
               {isStudent
                 ? studentProjects.map((p) => (
-                    <option key={p} value={p}>{p}</option>
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
                   ))
                 : [
                     "Website Redesign",
                     "Mobile App Development",
                     "Data Analysis Project",
                     "Machine Learning Model",
-                    "E-commerce Platform"
+                    "E-commerce Platform",
                   ].map((p) => (
-                    <option key={p} value={p}>{p}</option>
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
                   ))}
             </select>
 
-            <label htmlFor="taskName" className="font-bold">Task Name:</label>
-            <input id="name" value={form.name} onChange={handleChange} className="w-full bg-[#333333] p-2 mb-3 rounded" />
+            <label className="font-bold" htmlFor="name">
+              Task Name:
+            </label>
+            <input
+              id="name"
+              value={form.name}
+              onChange={handleChange}
+              className="mb-3 w-full rounded bg-[#333333] p-2"
+            />
 
-            <label htmlFor="description" className="font-bold">Description:</label>
-            <textarea id="description" value={form.description} onChange={handleChange} className="w-full bg-[#333333] p-2 mb-3 rounded h-20" />
+            <label className="font-bold" htmlFor="description">
+              Description:
+            </label>
+            <textarea
+              id="description"
+              value={form.description}
+              onChange={handleChange}
+              rows={4}
+              className="mb-3 w-full rounded bg-[#333333] p-2"
+            />
 
-            <label htmlFor="assignedStudent" className="font-bold">Assigned Student:</label>
+            <label className="font-bold" htmlFor="student">
+              Assigned Student:
+            </label>
             <select
               id="student"
               value={form.student}
               onChange={handleChange}
               disabled={isStudent}
-              className="w-full bg-[#333333] p-2 mb-3 rounded"
+              className="mb-3 w-full rounded bg-[#333333] p-2"
             >
               {isStudent ? (
-                <option value={currentUser.username}>{currentUser.username}</option>
+                <option value={currentUser.username}>
+                  {currentUser.username}
+                </option>
               ) : (
                 studentsList.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
                 ))
               )}
             </select>
 
-            <label htmlFor="status" className="font-bold">Status:</label>
-            <select id="status" value={form.status} onChange={handleChange} className="w-full bg-[#333333] p-2 mb-3 rounded">
+            <label className="font-bold" htmlFor="status">
+              Status:
+            </label>
+            <select
+              id="status"
+              value={form.status}
+              onChange={handleChange}
+              className="mb-3 w-full rounded bg-[#333333] p-2"
+            >
               <option value="">Select a status</option>
               {[
                 "In Progress",
                 "Completed",
                 "Pending",
                 "On Hold",
-                "Cancelled"
+                "Cancelled",
               ].map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
 
-            <label htmlFor="dueDate" className="font-bold">Due Date:</label>
-            <input type="date" id="dueDate" value={form.dueDate} onChange={handleChange} className="w-full bg-[#333333] p-2 mb-5 rounded" />
+            <label className="font-bold" htmlFor="dueDate">
+              Due Date:
+            </label>
+            <input
+              type="date"
+              id="dueDate"
+              value={form.dueDate}
+              onChange={handleChange}
+              className="mb-5 w-full rounded bg-[#333333] p-2"
+            />
 
-            <button onClick={handleSubmit} className="bg-[#4caf50] hover:bg-[#029a1b] w-full py-2 rounded font-bold">
+            <button
+              onClick={handleSubmit}
+              className="w-full rounded bg-[#4caf50] py-2 font-bold hover:bg-[#029a1b]"
+            >
               {editIdx !== null ? "Update Task" : "Add Task"}
             </button>
           </div>
         </div>
       )}
 
-      {/* Table */}
-      <div className="overflow-x-auto shadow-lg rounded-lg">
+      {/* الجدول */}
+      <div className="overflow-x-auto rounded-lg shadow-lg">
         <table className="min-w-full text-left">
           <thead className="bg-[#333] text-white">
             <tr>
@@ -259,11 +335,23 @@ export default function TasksPage() {
                 <td className="p-2">{t.name}</td>
                 <td className="p-2">{t.description}</td>
                 <td className="p-2">{t.student}</td>
-                <td className={"p-2 " + getStatusColor(t.status)}>{t.status}</td>
+                <td className={`p-2 ${getStatusColor(t.status)}`}>
+                  {t.status}
+                </td>
                 <td className="p-2">{t.dueDate}</td>
-                <td className="p-2 flex gap-2">
-                  <button onClick={() => openModal(idx)} className="underline">Edit</button>
-                  <button onClick={() => handleDelete(t.id)} className="underline text-red-400">Delete</button>
+                <td className="flex gap-2 p-2">
+                  <button
+                    onClick={() => openModal(idx)}
+                    className="underline"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(t.id)}
+                    className="text-red-400 underline"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}

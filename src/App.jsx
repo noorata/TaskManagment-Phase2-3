@@ -1,14 +1,14 @@
-import React from "react";
 import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";   // ⬅️
 import AppRoutes from "./helpers/AppRoutes";
-import "./index.css"; // ضروري لتشغيل Tailwind
+import "./index.css";
 
-const App = () => {
-  return (
+const App = () => (
+  <AuthProvider>
     <BrowserRouter>
       <AppRoutes />
     </BrowserRouter>
-  );
-};
+  </AuthProvider>
+);
 
 export default App;
