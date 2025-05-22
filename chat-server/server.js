@@ -78,8 +78,25 @@ io.on("connection", (socket) => {
       socket.emit("chat:message", payload); 
     }
   });
+socket.on("chat:received", ({ ts, from, to }) => {
+  const nSender = norm(to);   // المُرسل الأصلي هو 'to' لأن المستقبل أرسل الـ ack
+  const target = clients.get(nSender);
+  if (target) {
+    target.emit("chat:delivered", { ts });
+    console.log(`📬 delivered ack sent to ${to} for ts: ${ts}`);
+  }
+});
 
-  /* =============== 3) قطع الاتصال =============== */
+socket.on("chat:read", ({ ts, from, to }) => {
+  const nSender = norm(to);   // نفس التفسير هنا
+  const target = clients.get(nSender);
+  if (target) {
+    target.emit("chat:read", { ts });
+    console.log(`📖 read ack sent to ${to} for ts: ${ts}`);
+  }
+});
+
+
   socket.on("disconnect", () => {
     clients.delete(socket.normName);
     console.log("🚪 disconnected:", socket.id);
