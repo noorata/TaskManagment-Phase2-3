@@ -1,14 +1,30 @@
-import React from "react";
 import { BrowserRouter } from "react-router-dom";
-import AppRoutes from "./helpers/AppRoutes";
-import "./index.css"; // ضروري لتشغيل Tailwind
+import { AuthProvider } from "@/app/context/AuthContext";
+import AppRoutes from "@/app/routes/AppRoutes";
 
-const App = () => {
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "./index.css";
+
+export default function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
-  );
-};
+    <AuthProvider>
+      <BrowserRouter>
+        <>
+          <AppRoutes />
 
-export default App;
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            closeOnClick
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="dark"
+          />
+        </>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}
