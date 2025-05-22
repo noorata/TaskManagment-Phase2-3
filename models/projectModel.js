@@ -11,7 +11,7 @@ const projectSchema = new mongoose.Schema({
   },
   students: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',  // ربط المصفوفة بموديل الـ User
+    ref: 'User',
   }],
   category: {
     type: String,
@@ -31,7 +31,7 @@ const projectSchema = new mongoose.Schema({
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',  // ربط المنشئ بموديل الـ User
+    ref: 'User',
     required: true
   }
 }, {

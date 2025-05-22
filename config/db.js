@@ -1,4 +1,3 @@
-// db.js
 import mongoose from "mongoose";
 
 const connectDB = async () => {
@@ -10,7 +9,7 @@ const connectDB = async () => {
     console.log("✅ MongoDB Connected");
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);
-    process.exit(1); // إيقاف التطبيق إذا فشل الاتصال
+    process.exit(1); 
   }
 };
 

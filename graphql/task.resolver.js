@@ -63,7 +63,7 @@ const formattedTasks = tasks.map(task => {
     },
     project: task.project
       ? {
-          _id: task.project._id.toString(),  // هنا حولنا _id إلى id
+          _id: task.project._id.toString(),
           title: task.project.title,
         }
       : null,
@@ -125,9 +125,7 @@ taskCount: async (_, __, { user }) => {
     if (String(user.id) !== String(assignedUser._id)) {
       throw new Error("You can only assign tasks to yourself");
     }
-    // if (!isStudentInProject) {
-    //   throw new Error("You are not part of this project group");
-    // }
+    
   } else {
     throw new Error("Unauthorized user role");
   }
@@ -140,7 +138,6 @@ taskCount: async (_, __, { user }) => {
    throw new Error("Due date must be within the project duration");
   }
 
-  // ✅ لو الطالب أضاف التاسك لنفسه، خليه هو نفسه الـ createdBy
   const createdById =
     user.role === "student" && String(user._id) === String(assignedUser._id)
       ? assignedUser._id
@@ -189,7 +186,7 @@ updateTask: async (_, { id, input }) => {
     assignedTo: {
       ...updatedTask.assignedTo.toObject(),
       _id: updatedTask.assignedTo._id.toString(),
-      id: updatedTask.assignedTo._id.toString(),  // إذا الـschema يتوقع id وليس _id
+      id: updatedTask.assignedTo._id.toString(), 
     },
   };
 },

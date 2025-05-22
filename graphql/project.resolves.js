@@ -16,10 +16,8 @@ const resolvers = {
     let filter = {};
 
     if (currentUser.role === "admin") {
-      // إذا المستخدم أدمن، جيب المشاريع اللي هو عاملها
       filter.createdBy = currentUser.id;
     } else if (currentUser.role === "student") {
-      // إذا المستخدم طالب، جيب المشاريع اللي هو مشارك فيها ضمن students array
       filter.students = currentUser.id;
     } else {
       throw new Error("الدور غير معروف");
@@ -61,7 +59,6 @@ createdBy: user.id,
 
   let filter = {};
 
-  // تحقق من الرول لتحديد كيفية الفلترة
   if (user.role === "admin") {
     filter.createdBy = user.id;
   } else if (user.role === "student") {
@@ -70,12 +67,10 @@ createdBy: user.id,
     throw new Error("Invalid role");
   }
 
-  // فلترة حسب الحالة إن وجدت
   if (status) {
     filter.status = status;
   }
 
-  // فلترة حسب النص إن وجد
   if (search) {
     filter.$or = [
       { title: { $regex: search, $options: 'i' } },
@@ -103,7 +98,7 @@ createdBy: user.id,
         const {
           title,
           description,
-          students, // أسماء الطلاب
+          students,
           category,
           startDate,
           endDate,

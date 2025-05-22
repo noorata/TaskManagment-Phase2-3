@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";   
-import authenticate from './middleware/auth.js';  // نفس الشيء
+import authenticate from './middleware/auth.js'; 
 
 import { ApolloServer } from "apollo-server-express";
 import rateLimit from "express-rate-limit";
@@ -20,8 +20,8 @@ import taskResolver from './graphql/task.resolver.js';
 dotenv.config();
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 دقيقة
-  max: 10000, // 10 محاولات فقط
+  windowMs: 15 * 60 * 1000,
+  max: 10000,
   message: "لقد تجاوزت عدد المحاولات المسموحة. حاول لاحقًا.",
 });
 
@@ -37,12 +37,10 @@ const startServer = async () => {
 
          const query = req.body?.query || "";
 
-    // اسمح بدون توكن لـ RegisterUser, Login, وأيضًا لو الاستعلام فيه admins
     if (["RegisterUser", "Login"].includes(operation) || query.includes("admins")|| query.includes("students")) {
       return {};
     }
  if (query.includes("admins")|| query.includes("students")) {
-    // اسمح بدون توكن
     return next();
   }
       const user = authenticate(req);

@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ["student", "admin"],
-    default: "student", // أو "user" حسب استخدامك
+    default: "student",
     required: [true, "الدور مطلوب"],
   },
   universityId: {
@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
 }, {
-  timestamps: true, // ✅ يضيف createdAt و updatedAt تلقائيًا
+  timestamps: true,
 });
 
 export default mongoose.model("User", userSchema);
